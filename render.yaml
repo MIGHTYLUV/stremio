@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: stremio-4k-addon
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    plan: free
