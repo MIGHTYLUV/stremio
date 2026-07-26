@@ -1,32 +1,78 @@
-# 4K & 1080p Nuvio Scrapers 🌟
+# 4K Stremio Addon
 
-A dedicated, curated repository of high-speed local scrapers for **Nuvio**, specifically filtered to always enable and return **ONLY 4K (2160p) and 1080p** streaming links. **Zero 720p or lower quality streams allowed.**
+Aggregates **4K** and **1080p** streams from two sources:
 
-## Available Scrapers (Always 4K & 1080p Enabled)
+| Source | Type | How |
+|--------|------|-----|
+| **Daher Movies** (`a.111477.xyz`) | Direct HTTP (Proxy) | Resolves directory listings via `p.111477.xyz/bulk?u=` proxy |
+| **ThePirateBay** (`apibay.org`) | Magnet / torrent | JSON API search by title (`cat=207/208`) |
 
-| Scraper Name | Supported Quality | Languages | Description |
-|---|---|---|---|
-| **👑 OlaMovies 4K & 1080p** | 4K & 1080p | 🏴󠁧󠁢󠁥󠁮󠁧󠁿 🇮🇳 | Highest Quality 4K UHD & 1080p BluRay REMUX Movies and TV Series |
-| **🌟 UHDMovies 4K & 1080p** | 4K & 1080p | 🏴󠁧󠁢󠁥󠁮󠁧󠁿 🇮🇳 | UHD Movies streaming filtered for 4K & 1080p resolution (NO 720p) |
-| **⚡ 4KHDHub 4K & 1080p** | 4K & 1080p | 🏴󠁧󠁢󠁥󠁮󠁧󠁿 🇮🇳 | 4KHDHub direct links filtered for 4K & 1080p resolution (NO 720p) |
-| **⚡ 4KHDHub-NEW 4K & 1080p** | 4K & 1080p | 🏴󠁧󠁢󠁥󠁮󠁧󠁿 🇮🇳 | 4KHDHub New scraper filtered for 4K & 1080p resolution (NO 720p) |
-| **🔥 HDHub4u 4K & 1080p** | 4K & 1080p | 🏴󠁧󠁢󠁥󠁮󠁧󠁿 🇮🇳 | HDHub4u streaming filtered for 4K & 1080p resolution (NO 720p) |
-| **☄️ VegaMovies 4K & 1080p** | 4K & 1080p | 🏴󠁧󠁢󠁥󠁮󠁧󠁿 🇮🇳 | VegaMovies streaming filtered for 4K & 1080p resolution (Strictly NO 720p) |
-| **📦 DDLBase 4K & 1080p** | 4K & 1080p | 🏴󠁧󠁢󠁥󠁮󠁧󠁿 🇮🇳 | DDLBase direct downloads filtered for 4K & 1080p resolution (Strictly NO 720p) |
-| **🎥 XDMovies 4K & 1080p** | 4K & 1080p | 🏴󠁧󠁢󠁥󠁮󠁧󠁿 🇮🇳 | XDMovies streaming filtered for 4K & 1080p resolution (NO 720p) |
-| **🎞️ PSArips 4K & 1080p** | 4K & 1080p | 🏴󠁧󠁢󠁥󠁮󠁧󠁿 | PSArips x265 HEVC releases filtered for 4K & 1080p resolution (NO 720p) |
-| **🎬 Dahmermovies 4K & 1080p** | 4K & 1080p | 🏴󠁧󠁢󠁥󠁮󠁧󠁿 | Dahmermovies streaming filtered for 4K & 1080p resolution (NO 720p) |
-| **🚀 MoviesDrive 4K & 1080p** | 4K & 1080p | 🏴󠁧󠁢󠁥󠁮󠁧󠁿 🇮🇳 | MoviesDrive streaming filtered for 4K & 1080p resolution (NO 720p) |
-| **💎 HindMoviez 4K & 1080p** | 4K & 1080p | 🏴󠁧󠁢󠁥󠁮󠁧󠁿 🇮🇳 | HindMoviez streaming filtered for 4K & 1080p resolution (NO 720p) |
-| **🎥 Cineby 4K & 1080p** | 4K & 1080p | 🏴󠁧󠁢󠁥󠁮󠁧󠁿 | Cineby streaming filtered for 4K & 1080p resolution (NO 720p) |
-| **🇫🇷 Nakios 4K & 1080p** | 4K & 1080p | 🇫🇷 🏴󠁧󠁢󠁥󠁮󠁧󠁿 | French & English streaming filtered for 4K & 1080p resolution (NO 720p) |
+## Features
 
-## Installation
+- **4K priority, 1080p fallback** — shows 2160p streams first; if none exist, shows 1080p
+- **English & Hindi only** — excludes French, Spanish, German, etc.; accepts no-tag files as English
+- **Rich stream details** — resolution, source (Remux/WEB-DL/BluRay), codec (HEVC/AVC/AV1), audio (TrueHD Atmos 7.1 / DDP 5.1), HDR (DV/HDR10+/HDR10), file size, seeders
+- **Movies + TV Series** via Stremio's `tt:season:episode` ID format
+- **Fuzzy title matching** for Daher (handles colons, articles, special characters)
+- **Rate-limited** requests to avoid rate limits from Daher
+- **Cached** Cinemeta metadata (6h TTL) to reduce API calls
 
-1. Upload this repository folder (`4K-Nuvio`) to your GitHub account as a **Public** repo.
-2. In the Nuvio app, go to **Settings → Local Scrapers**.
-3. Add your raw manifest link:
-```text
-https://raw.githubusercontent.com/<YOUR_GITHUB_USERNAME>/<YOUR_REPO_NAME>/main/manifest.json
+## Quick Start
+
+```bash
+# Install dependencies
+npm install
+
+# Start the addon
+npm start
 ```
-4. Enable the scrapers and enjoy strictly 4K & 1080p streaming!
+
+Then in Stremio: **Settings → Add-ons → Community** → enter:
+```
+http://127.0.0.1:7000/manifest.json
+```
+
+## Stream Display
+
+Each stream shows rich quality information:
+
+```
+🎬 Dahmer 4K
+📺 4K | Remux
+🎥 HEVC | 10bit | HDR10+ | DV
+🔊 TrueHD Atmos 7.1
+💾 ~45.2 GB
+🏷️ CiNEPHiLES
+```
+
+```
+🏴‍☠️ TPB 4K
+📺 4K | WEB-DL
+🎥 H.265 | HDR10+
+🔊 DDP 5.1
+💾 12.3 GB
+👤 245 seeders
+🏷️ BYNDR
+```
+
+## Architecture
+
+```
+index.js              ← Entry point (serveHTTP, no Express)
+addon.js              ← Manifest + stream handler
+lib/
+├── metadata.js       ← Cinemeta resolver (cached, rate-limited)
+├── daher.js          ← Daher scraper (fuzzy match, proxy URL, lang filter)
+├── tpb.js            ← TPB searcher (cat 207/208, year validation)
+└── streamFormatter.js← Title formatting + sort
+```
+
+## Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | `7000` | HTTP server port |
+
+## License
+
+MIT
