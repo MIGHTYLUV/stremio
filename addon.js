@@ -9,13 +9,16 @@ const { fetchDaherStreams } = require('./lib/daher');
 const { fetchTpbStreams } = require('./lib/tpb');
 const { formatStream, sortStreams } = require('./lib/streamFormatter');
 
+const isVercel = !!(process.env.VERCEL || process.env.VERCEL_ENV);
+const envLabel = isVercel ? 'Vercel' : 'Render';
+
 const manifest = {
-  id: 'com.stremio.4k-streams',
-  version: '1.0.1',
-  name: '4K Stremio',
+  id: `com.stremio.4k-streams-${envLabel.toLowerCase()}`,
+  version: '1.0.2',
+  name: `4K Stremio (${envLabel})`,
   description:
-    'Aggregates 4K streams from Daher Movies (direct HTTP) and ThePirateBay (magnet). ' +
-    'Prioritizes 4K → 1080p, English/Hindi, with rich quality details (HDR, codec, audio, size, seeders).',
+    `Aggregates 4K streams from Daher Movies and ThePirateBay (${envLabel} Host). ` +
+    'Returns 4K streams if available, falling back to 1080p if 4K is not found.',
   types: ['movie', 'series'],
   catalogs: [],
   resources: ['stream'],
@@ -36,7 +39,7 @@ builder.defineStreamHandler(async ({ type, id }) => {
   const season = parts[1] ? parseInt(parts[1], 10) : null;
   const episode = parts[2] ? parseInt(parts[2], 10) : null;
 
-  console.log(`\n[stream] ${type} ${id}`);
+  console.log(`\n[stream] [${envLabel}] ${type} ${id}`);
 
   let meta;
   try {
@@ -57,8 +60,12 @@ builder.defineStreamHandler(async ({ type, id }) => {
     fetchTpbStreams(meta, season, episode)
   ]);
 
-  const daherRaw = daherResult.status === 'fulfilled' ? daherResult.value : [];
+  const daherRaw = daherResult.status === 'fulfilled' ? meFilterDaher(daherResult.value) : [];
   const tpbRaw   = tpbResult.status === 'fulfilled'   ? tpbResult.value   : [];
+
+  function meFilterDaher(list) {
+    return Array.isArray(list) ? list : [];
+  }
 
   if (daherResult.status === 'rejected') {
     console.warn(`[daher] failed: ${daherResult.reason}`);
@@ -67,13 +74,13 @@ builder.defineStreamHandler(async ({ type, id }) => {
     console.warn(`[tpb] failed: ${tpbResult.reason}`);
   }
 
-  console.log(`[stream] daher=${daherRaw.length} tpb=${tpbRaw.length}`);
+  console.log(`[stream] Daher=${daherRaw.length} TPB=${tpbRaw.length}`);
 
   const sorted = sortStreams([...daherRaw, ...tpbRaw]);
-  const streams = sorted.map(formatStream);
+  const streams = sorted.map(s => formatStream(s, envLabel));
 
   const elapsed = Date.now() - startedAt;
-  console.log(`[stream] returning ${streams.length} streams in ${elapsed}ms`);
+  console.log(`[stream] returning ${streams.length} stream(s) in ${elapsed}ms`);
 
   return {
     streams,
