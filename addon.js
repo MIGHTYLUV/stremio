@@ -14,8 +14,8 @@ const envLabel = isVercel ? 'Vercel' : 'Render';
 
 const manifest = {
   id: `com.stremio.4k-streams-${envLabel.toLowerCase()}`,
-  version: '1.0.2',
-  name: `4K Stremio (${envLabel})`,
+  version: '1.0.3',
+  name: `4K Stremio - ${envLabel}`,
   description:
     `Aggregates 4K streams from Daher Movies and ThePirateBay (${envLabel} Host). ` +
     'Returns 4K streams if available, falling back to 1080p if 4K is not found.',
@@ -60,7 +60,7 @@ builder.defineStreamHandler(async ({ type, id }) => {
     fetchTpbStreams(meta, season, episode)
   ]);
 
-  const daherRaw = daherResult.status === 'fulfilled' ? meFilterDaher(daherResult.value) : [];
+  const daherRaw = meFilterDaher(daherResult.status === 'fulfilled' ? daherResult.value : []);
   const tpbRaw   = tpbResult.status === 'fulfilled'   ? tpbResult.value   : [];
 
   function meFilterDaher(list) {
