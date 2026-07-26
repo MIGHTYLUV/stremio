@@ -14,10 +14,10 @@ const envLabel = isVercel ? 'Vercel' : 'Render';
 
 const manifest = {
   id: `com.stremio.4k-streams-${envLabel.toLowerCase()}`,
-  version: '1.0.3',
-  name: `4K Stremio - ${envLabel}`,
+  version: '1.0.4',
+  name: `${envLabel} 4K`,
   description:
-    `Aggregates 4K streams from Daher Movies and ThePirateBay (${envLabel} Host). ` +
+    `Aggregates 4K streams from Daher Movies and ThePirateBay on ${envLabel}. ` +
     'Returns 4K streams if available, falling back to 1080p if 4K is not found.',
   types: ['movie', 'series'],
   catalogs: [],
