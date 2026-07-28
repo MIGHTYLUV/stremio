@@ -1,12 +1,13 @@
 /**
  * Addon manifest + stream handler.
- * Resolves IMDB → metadata via Cinemeta, then fans out to Daher + TPB
- * in parallel, sorts 4K first, and returns rich-formatted streams.
+ * Aggregates 4K streams from Daher Movies, ThePirateBay, and 1337x in parallel.
+ * Prioritizes 4K → 1080p fallback.
  */
 const { addonBuilder } = require('stremio-addon-sdk');
 const { getMetadata } = require('./lib/metadata');
 const { fetchDaherStreams } = require('./lib/daher');
 const { fetchTpbStreams } = require('./lib/tpb');
+const { fetch1337xStreams } = require('./lib/x1337');
 const { formatStream, sortStreams } = require('./lib/streamFormatter');
 
 const isVercel = !!(process.env.VERCEL || process.env.VERCEL_ENV);
@@ -14,10 +15,10 @@ const envLabel = isVercel ? 'Vercel' : 'Render';
 
 const manifest = {
   id: `com.stremio.4k-streams-${envLabel.toLowerCase()}`,
-  version: '1.0.4',
+  version: '1.0.5',
   name: `${envLabel} 4K`,
   description:
-    `Aggregates 4K streams from Daher Movies and ThePirateBay on ${envLabel}. ` +
+    `Aggregates 4K streams from 1337x, Daher Movies, and ThePirateBay on ${envLabel}. ` +
     'Returns 4K streams if available, falling back to 1080p if 4K is not found.',
   types: ['movie', 'series'],
   catalogs: [],
@@ -55,28 +56,27 @@ builder.defineStreamHandler(async ({ type, id }) => {
   console.log(`[stream] resolved: "${meta.title}" (${meta.year || '?'})` +
     (season ? ` S${season}E${episode}` : ''));
 
-  const [daherResult, tpbResult] = await Promise.allSettled([
+  const [daherResult, tpbResult, x1337Result] = await Promise.allSettled([
     fetchDaherStreams(meta, season, episode),
-    fetchTpbStreams(meta, season, episode)
+    fetchTpbStreams(meta, season, episode),
+    fetch1337xStreams(meta, season, episode)
   ]);
 
-  const daherRaw = meFilterDaher(daherResult.status === 'fulfilled' ? daherResult.value : []);
-  const tpbRaw   = tpbResult.status === 'fulfilled'   ? tpbResult.value   : [];
+  const daherRaw = meFilterList(daherResult);
+  const tpbRaw   = meFilterList(tpbResult);
+  const x1337Raw = meFilterList(x1337Result);
 
-  function meFilterDaher(list) {
-    return Array.isArray(list) ? list : [];
+  function meFilterList(res) {
+    return res.status === 'fulfilled' && Array.isArray(res.value) ? res.value : [];
   }
 
-  if (daherResult.status === 'rejected') {
-    console.warn(`[daher] failed: ${daherResult.reason}`);
-  }
-  if (tpbResult.status === 'rejected') {
-    console.warn(`[tpb] failed: ${tpbResult.reason}`);
-  }
+  if (daherResult.status === 'rejected') console.warn(`[daher] failed: ${daherResult.reason}`);
+  if (tpbResult.status === 'rejected')   console.warn(`[tpb] failed: ${tpbResult.reason}`);
+  if (x1337Result.status === 'rejected') console.warn(`[1337x] failed: ${x1337Result.reason}`);
 
-  console.log(`[stream] Daher=${daherRaw.length} TPB=${tpbRaw.length}`);
+  console.log(`[stream] Daher=${daherRaw.length} TPB=${tpbRaw.length} 1337x=${x1337Raw.length}`);
 
-  const sorted = sortStreams([...daherRaw, ...tpbRaw]);
+  const sorted = sortStreams([...daherRaw, ...tpbRaw, ...x1337Raw]);
   const streams = sorted.map(s => formatStream(s, envLabel));
 
   const elapsed = Date.now() - startedAt;
