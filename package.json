@@ -13,6 +13,7 @@
     "axios": "^1.7.7",
     "bottleneck": "^2.19.5",
     "cheerio": "^1.0.0",
+    "cloudscraper": "^4.6.0",
     "parse-torrent-title": "^1.4.0",
     "stremio-addon-sdk": "^1.6.10"
   },
